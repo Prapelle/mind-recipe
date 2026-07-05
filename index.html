@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mind Recipe — สมุดจดสูตรอาหาร</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chonburi&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FAF5E9;
+    --paper-deep:#F1E9D6;
+    --ink:#2B2620;
+    --sage:#5C6B4F;
+    --sage-deep:#43503A;
+    --paprika:#C1502E;
+    --paprika-deep:#9E3F23;
+    --butter:#E8C468;
+    --line:#D9CDAE;
+    --card-shadow: 0 2px 0 rgba(43,38,32,0.05), 0 10px 24px -12px rgba(43,38,32,0.25);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at top left, rgba(92,107,79,0.06), transparent 55%),
+      radial-gradient(ellipse at bottom right, rgba(193,80,46,0.05), transparent 55%),
+      var(--paper);
+    color:var(--ink);
+    font-family:'Sarabun', sans-serif;
+    min-height:100vh;
+    padding-bottom:60px;
+  }
+  h1,h2,h3,.display{
+    font-family:'Chonburi', 'Sarabun', sans-serif;
+    font-weight:400;
+    letter-spacing:0.2px;
+  }
+  .wrap{max-width:1040px; margin:0 auto; padding:0 20px;}
+
+  /* ---------- Header ---------- */
+  header.top{
+    padding:36px 0 22px;
+    border-bottom:2px dashed var(--line);
+    margin-bottom:28px;
+  }
+  .top-row{display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap;}
+  .brand h1{font-size:34px; color:var(--sage-deep); margin:0 0 4px;}
+  .brand p{margin:0; color:#6b6152; font-size:14.5px;}
+  .sync-badge{margin-top:6px; font-size:12px; color:#6b8a5c; font-weight:600;}
+  .sync-badge.warn{color:var(--paprika-deep);}
+  .brand .stamp{
+    display:inline-block; transform:rotate(-3deg); background:var(--butter);
+    color:var(--ink); font-size:11px; padding:2px 8px; border-radius:3px;
+    font-family:'Sarabun'; font-weight:700; margin-left:8px; letter-spacing:0.5px;
+  }
+  button.primary{
+    background:var(--paprika); color:#FFF8EE; border:none; border-radius:10px;
+    padding:13px 22px; font-family:'Sarabun'; font-weight:700; font-size:15px;
+    cursor:pointer; box-shadow:0 4px 0 var(--paprika-deep); transition:transform .08s ease;
+    white-space:nowrap;
+  }
+  button.primary:active{transform:translateY(3px); box-shadow:0 1px 0 var(--paprika-deep);}
+  button.ghost{
+    background:transparent; border:1.5px solid var(--line); color:var(--ink);
+    border-radius:10px; padding:9px 14px; font-family:'Sarabun'; font-weight:600;
+    font-size:13.5px; cursor:pointer;
+  }
+  button.ghost:hover{border-color:var(--sage);}
+  button.link{background:none;border:none;color:var(--paprika-deep);font-weight:700;cursor:pointer;font-family:'Sarabun';font-size:13.5px;padding:0;}
+
+  /* ---------- Search + Pantry ---------- */
+  .controls{margin-bottom:30px;}
+  .searchbar{
+    display:flex; align-items:center; gap:10px; background:#fff;
+    border:1.5px solid var(--line); border-radius:12px; padding:11px 16px; margin-bottom:16px;
+  }
+  .searchbar input{
+    flex:1; border:none; outline:none; font-family:'Sarabun'; font-size:15.5px; background:transparent; color:var(--ink);
+  }
+  .pantry-label{font-size:13px; color:#7a705f; margin:0 0 8px; display:flex; align-items:center; gap:8px;}
+  .pantry-label .clear{cursor:pointer; color:var(--paprika-deep); font-weight:700;}
+  .pantry{display:flex; flex-wrap:wrap; gap:8px;}
+  .jar{
+    position:relative; padding:6px 14px 6px 26px; border-radius:999px; font-size:13.5px;
+    background:var(--paper-deep); border:1.5px solid var(--line); cursor:pointer; user-select:none;
+    color:#54493a; transition:all .12s ease;
+  }
+  .jar::before{
+    content:''; position:absolute; left:9px; top:50%; transform:translateY(-50%);
+    width:9px; height:9px; border-radius:50%; background:#d8cca3; border:1.5px solid #c9bb8f;
+  }
+  .jar.active{background:var(--sage); border-color:var(--sage-deep); color:#fff;}
+  .jar.active::before{background:var(--butter); border-color:#c9a53f;}
+  .jar:hover{border-color:var(--sage);}
+  .pantry-empty{color:#8a8071; font-size:13.5px; font-style:italic;}
+
+  /* ---------- Recipe grid ---------- */
+  .grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(270px,1fr)); gap:22px;}
+  .card{
+    position:relative; background:#fff; border-radius:4px 4px 10px 10px;
+    box-shadow:var(--card-shadow); padding:22px 20px 18px;
+    border-top:6px solid var(--sage);
+    display:flex; flex-direction:column; min-height:100%;
+  }
+  .card::before, .card::after{
+    content:''; position:absolute; top:11px; width:11px; height:11px; border-radius:50%;
+    background:var(--paper); box-shadow:inset 0 0 0 2px var(--line);
+  }
+  .card::before{left:16px;} .card::after{right:16px;}
+  .card .badge-match{
+    position:absolute; top:-11px; right:14px; background:var(--butter); color:var(--ink);
+    font-size:11.5px; font-weight:700; padding:3px 10px; border-radius:999px; box-shadow:0 2px 5px rgba(0,0,0,0.15);
+  }
+  .card h3{font-size:19px; margin:10px 0 4px; color:var(--ink); line-height:1.3;}
+  .card .meta{font-size:12.5px; color:#8a8071; margin-bottom:10px;}
+  .card .tags{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px;}
+  .card .tags span{
+    font-size:11.5px; background:var(--paper-deep); color:#5c5340; padding:3px 9px; border-radius:999px; border:1px solid var(--line);
+  }
+  .card .tags span.hit{background:var(--sage); color:#fff; border-color:var(--sage-deep);}
+  .card .tags span.more{background:transparent; border-style:dashed;}
+  .card .actions{margin-top:auto; display:flex; gap:8px; padding-top:8px;}
+  .card .actions button{flex:1;}
+
+  .empty-state{
+    text-align:center; padding:70px 20px; color:#8a8071; border:2px dashed var(--line); border-radius:16px;
+  }
+  .empty-state .display{font-size:22px; color:var(--sage-deep); margin-bottom:8px;}
+
+  /* ---------- Modal ---------- */
+  .overlay{
+    display:none; position:fixed; inset:0; background:rgba(43,38,32,0.45); z-index:50;
+    align-items:flex-start; justify-content:center; padding:40px 16px; overflow-y:auto;
+  }
+  .overlay.show{display:flex;}
+  .modal{
+    background:var(--paper); border-radius:16px; max-width:640px; width:100%;
+    padding:30px 28px 28px; box-shadow:0 30px 60px -20px rgba(0,0,0,0.4); position:relative;
+  }
+  .modal .close{
+    position:absolute; top:18px; right:18px; background:none; border:none; font-size:22px; cursor:pointer; color:#8a8071;
+  }
+  .modal h2{color:var(--sage-deep); font-size:24px; margin:0 0 18px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-size:13px; font-weight:600; color:#6b6152; margin-bottom:5px;}
+  .field input[type=text], .field input[type=number], .field textarea, .field select{
+    width:100%; padding:10px 12px; border:1.5px solid var(--line); border-radius:8px;
+    font-family:'Sarabun'; font-size:15px; background:#fff; color:var(--ink); resize:vertical;
+  }
+  .field textarea{min-height:60px;}
+  .row2{display:grid; grid-template-columns:1fr 140px; gap:12px;}
+  .ing-row, .step-row{display:flex; gap:8px; margin-bottom:8px; align-items:flex-start;}
+  .ing-row input{flex:2;}
+  .ing-row input.amt{flex:1;}
+  .ing-row select{flex:1;}
+  .step-row .num{
+    width:28px; height:38px; display:flex; align-items:center; justify-content:center;
+    font-weight:700; color:var(--sage-deep); flex-shrink:0;
+  }
+  .step-row textarea{flex:1; min-height:44px;}
+  .rm{
+    background:none; border:none; color:var(--paprika-deep); font-size:19px; cursor:pointer; flex-shrink:0;
+    width:32px; height:38px;
+  }
+  .add-row-btn{
+    background:none; border:1.5px dashed var(--line); color:var(--sage-deep); border-radius:8px;
+    padding:8px 12px; font-size:13.5px; font-weight:600; cursor:pointer; width:100%; margin-top:2px;
+  }
+  .add-row-btn:hover{border-color:var(--sage);}
+  .modal-actions{display:flex; justify-content:flex-end; gap:10px; margin-top:22px;}
+
+  /* Detail modal specifics */
+  .detail-servings{
+    display:inline-block; background:var(--paper-deep); border:1px solid var(--line); border-radius:999px;
+    padding:4px 12px; font-size:12.5px; color:#5c5340; margin-bottom:14px;
+  }
+  .detail-desc{color:#5c5340; font-size:14.5px; margin-bottom:20px; line-height:1.6;}
+  .detail-section h4{font-size:14px; color:var(--sage-deep); text-transform:uppercase; letter-spacing:0.8px; margin:0 0 10px;}
+  .ing-list{list-style:none; padding:0; margin:0 0 22px;}
+  .ing-list li{
+    display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed var(--line); font-size:15px;
+  }
+  .ing-list li span.amt{color:#8a8071; font-size:13.5px;}
+  .steps-list{list-style:none; padding:0; margin:0; counter-reset:step;}
+  .steps-list li{counter-increment:step; display:flex; gap:12px; margin-bottom:14px; font-size:15px; line-height:1.6;}
+  .steps-list li::before{
+    content:counter(step); flex-shrink:0; width:26px; height:26px; border-radius:50%;
+    background:var(--sage); color:#fff; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center;
+  }
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--ink); color:#FAF5E9;
+    padding:10px 20px; border-radius:999px; font-size:13.5px; z-index:100; opacity:0; pointer-events:none; transition:opacity .25s ease;
+  }
+  .toast.show{opacity:1;}
+  .loading-note{text-align:center; padding:60px 0; color:#8a8071; font-size:14px;}
+
+  @media (max-width:520px){
+    .brand h1{font-size:27px;}
+    .modal{padding:22px 18px 20px;}
+    .row2{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="top-row">
+      <div class="brand">
+        <h1>Mind Recipe<span class="stamp">v.1</span></h1>
+        <p>สมุดจดสูตรอาหารและวัตถุดิบของคุณ — ค้นหาสูตรจากของที่มีอยู่ในครัว</p>
+        <div class="sync-badge" id="syncBadge"></div>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="ghost" onclick="openExport()">⇪ ส่งออกไป Google Sheets</button>
+        <button class="primary" onclick="openForm()">+ เพิ่มสูตรอาหาร</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="searchbar">
+      <span>🔎</span>
+      <input id="searchInput" type="text" placeholder="ค้นหาชื่อสูตรอาหาร..." oninput="onSearchInput(this.value)">
+    </div>
+    <p class="pantry-label" id="pantryLabel">แตะวัตถุดิบที่คุณมี เพื่อค้นหาสูตรที่ทำได้</p>
+    <div class="pantry" id="pantryBox"></div>
+  </div>
+
+  <div id="gridArea"><div class="loading-note">กำลังโหลดสูตรอาหาร...</div></div>
+</div>
+
+<!-- Recipe Form Modal -->
+<div class="overlay" id="formOverlay">
+  <div class="modal">
+    <button class="close" onclick="closeForm()">✕</button>
+    <h2 id="formTitle">เพิ่มสูตรอาหารใหม่</h2>
+    <form id="recipeForm">
+      <div class="field">
+        <label>ชื่อสูตรอาหาร</label>
+        <input type="text" id="f-title" required placeholder="เช่น ผัดกะเพราหมูสับ">
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>คำอธิบายสั้น ๆ (ไม่บังคับ)</label>
+          <input type="text" id="f-desc" placeholder="เผ็ดร้อน ทำง่าย ใช้เวลา 15 นาที">
+        </div>
+        <div class="field">
+          <label>จำนวนที่ทำได้ (คน)</label>
+          <input type="number" id="f-servings" min="1" value="2">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>วัตถุดิบ</label>
+        <div id="ingRows"></div>
+        <button type="button" class="add-row-btn" onclick="addIngRow()">+ เพิ่มวัตถุดิบ</button>
+      </div>
+
+      <div class="field">
+        <label>ขั้นตอนการทำ</label>
+        <div id="stepRows"></div>
+        <button type="button" class="add-row-btn" onclick="addStepRow()">+ เพิ่มขั้นตอน</button>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="ghost" onclick="closeForm()">ยกเลิก</button>
+        <button type="button" class="primary" onclick="submitForm()">บันทึกสูตรอาหาร</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Recipe Detail Modal -->
+<div class="overlay" id="detailOverlay">
+  <div class="modal">
+    <button class="close" onclick="closeDetail()">✕</button>
+    <div id="detailBody"></div>
+  </div>
+</div>
+
+<!-- Export Modal -->
+<div class="overlay" id="exportOverlay">
+  <div class="modal" style="max-width:680px;">
+    <button class="close" onclick="closeExport()">✕</button>
+    <h2>ส่งออกสูตรอาหารไป Google Sheets</h2>
+    <p class="detail-desc" style="margin-bottom:14px;">เลือกวิธีที่สะดวก: ดาวน์โหลดเป็นไฟล์แล้วนำเข้า หรือคัดลอกข้อความไปวางในชีตที่เปิดอยู่ก็ได้</p>
+
+    <div class="field">
+      <label>วิธีที่ 1 — ดาวน์โหลดไฟล์ แล้วนำเข้า Google Sheets</label>
+      <p style="font-size:13px; color:#7a705f; margin:0 0 10px;">
+        กดดาวน์โหลด แล้วไปที่ <b>sheets.google.com</b> → เปิดชีตใหม่ → เมนู <b>ไฟล์ (File) → นำเข้า (Import) → อัปโหลด (Upload)</b> แล้วเลือกไฟล์นี้
+      </p>
+      <button class="primary" onclick="downloadRecipesCSV()">⬇ ดาวน์โหลดเป็นไฟล์ .csv</button>
+    </div>
+
+    <div class="field" style="margin-top:22px;">
+      <label>วิธีที่ 2 — คัดลอกแล้ววางลง Google Sheets โดยตรง</label>
+      <p style="font-size:13px; color:#7a705f; margin:0 0 10px;">
+        กด "คัดลอกทั้งหมด" แล้วไปวาง (Ctrl+V หรือ Cmd+V) ในเซลล์ A1 ของ Google Sheets — ข้อมูลจะแยกเป็นคอลัมน์ให้อัตโนมัติ
+        (ถ้าปุ่มคัดลอกอัตโนมัติใช้ไม่ได้ ให้กดเลือกทั้งหมดในกล่องข้อความด้านล่างแล้ว Ctrl+C/Cmd+C เอง)
+      </p>
+      <button class="ghost" onclick="copyRecipesTSV()" id="copyBtn">📋 คัดลอกทั้งหมด</button>
+      <textarea id="exportTextarea" readonly onclick="this.select()" style="width:100%; min-height:160px; margin-top:10px; font-family:monospace; font-size:12.5px; padding:10px; border:1.5px solid var(--line); border-radius:8px; background:#fff; color:var(--ink);"></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="ghost" onclick="closeExport()">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<datalist id="unitList">
+  <option value="กรัม"><option value="กิโลกรัม"><option value="มิลลิลิตร"><option value="ลิตร">
+  <option value="ช้อนชา"><option value="ช้อนโต๊ะ"><option value="ถ้วยตวง"><option value="ฟอง">
+  <option value="ชิ้น"><option value="กลีบ"><option value="ต้น"><option value="ใบ">
+  <option value="หัว"><option value="ขีด"><option value="ลูก"><option value="ตามชอบ">
+</datalist>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let recipes = [];
+let selectedIngredients = new Set();
+let searchQuery = '';
+let editingId = null;
+
+const STORAGE_KEY = 'recipes';
+
+// ---- Google Sheets backend (optional, cross-device) ----
+// วางลิงก์ Web app URL ที่ได้จากการ Deploy Google Apps Script ของคุณตรงนี้
+// (ดูขั้นตอนใน apps-script-code.gs) ต้องขึ้นต้นด้วย https://script.google.com/macros/s/.../exec
+const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbynBpvtMPyj6jM7rlXYhoYIU1vmeQWLx2FAbOLzbV3n6a3hd3npUeUPuC1MKgg5kqg/exec';
+
+function sheetConfigured(){
+  return typeof SHEET_API_URL === 'string' && SHEET_API_URL.indexOf('https://script.google.com/macros/') === 0;
+}
+
+function uid(){ return (crypto.randomUUID ? crypto.randomUUID() : 'id-' + Date.now() + '-' + Math.random().toString(16).slice(2)); }
+function norm(s){ return (s||'').trim(); }
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=> t.classList.remove('show'), 1800);
+}
+
+function updateSyncBadge(mode){
+  const el = document.getElementById('syncBadge');
+  if(!el) return;
+  const modes = {
+    sheets: { text: '🔗 ซิงค์กับ Google Sheets', cls: '' },
+    claude: { text: '💾 บันทึกในระบบของ Claude', cls: '' },
+    none:   { text: '⚠️ ยังไม่ได้ตั้งค่า Google Sheets — ข้อมูลจะหายเมื่อรีเฟรช', cls: 'warn' }
+  };
+  const m = modes[mode] || modes.none;
+  el.textContent = m.text;
+  el.className = 'sync-badge ' + m.cls;
+}
+
+async function loadRecipes(){
+  if(sheetConfigured()){
+    try{
+      const res = await fetch(SHEET_API_URL + '?t=' + Date.now());
+      const data = await res.json();
+      recipes = data.value ? JSON.parse(data.value) : [];
+      updateSyncBadge('sheets');
+      render();
+      return;
+    }catch(e){
+      console.error('Google Sheets load error:', e);
+      showToast('โหลดจาก Google Sheets ไม่สำเร็จ ลองใช้ที่เก็บสำรองแทน');
+      // fall through to the next storage option below
+    }
+  }
+  if(!window.storage || typeof window.storage.get !== 'function'){
+    console.warn('No persistent storage configured; starting with an empty, in-memory recipe list.');
+    recipes = [];
+    updateSyncBadge('none');
+    render();
+    return;
+  }
+  try{
+    const res = await window.storage.get(STORAGE_KEY, false);
+    recipes = res ? JSON.parse(res.value) : [];
+  }catch(e){
+    recipes = [];
+  }
+  updateSyncBadge('claude');
+  render();
+}
+
+async function saveRecipes(){
+  if(sheetConfigured()){
+    try{
+      await fetch(SHEET_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids a CORS preflight against Apps Script
+        body: JSON.stringify({ value: JSON.stringify(recipes) })
+      });
+      return;
+    }catch(e){
+      console.error('Google Sheets save error:', e);
+      showToast('บันทึกไป Google Sheets ไม่สำเร็จ: ' + (e && e.message ? e.message : 'ไม่ทราบสาเหตุ'));
+      return;
+    }
+  }
+  if(!window.storage || typeof window.storage.set !== 'function'){
+    console.warn('No persistent storage configured; recipe kept in memory only for this session.');
+    return;
+  }
+  try{
+    const res = await window.storage.set(STORAGE_KEY, JSON.stringify(recipes), false);
+    if(!res) console.warn('storage.set returned empty result', res);
+  }catch(e){
+    console.error('saveRecipes error:', e);
+    showToast('บันทึกลงระบบถาวรไม่สำเร็จ (ข้อมูลยังอยู่ในหน้านี้): ' + (e && e.message ? e.message : 'ไม่ทราบสาเหตุ'));
+  }
+}
+
+function allIngredientNames(){
+  const freq = {};
+  recipes.forEach(r => r.ingredients.forEach(ing => {
+    const n = norm(ing.name);
+    if(!n) return;
+    freq[n] = (freq[n]||0) + 1;
+  }));
+  return Object.entries(freq).sort((a,b)=> b[1]-a[1]).map(e=>e[0]);
+}
+
+function renderPantry(){
+  const box = document.getElementById('pantryBox');
+  const label = document.getElementById('pantryLabel');
+  const names = allIngredientNames();
+  if(names.length === 0){
+    box.innerHTML = '';
+    label.innerHTML = '<span class="pantry-empty">ยังไม่มีวัตถุดิบให้เลือก เพิ่มสูตรอาหารก่อนนะ</span>';
+    return;
+  }
+  label.innerHTML = 'แตะวัตถุดิบที่คุณมี เพื่อค้นหาสูตรที่ทำได้' +
+    (selectedIngredients.size ? ` <span class="clear" onclick="clearFilter()">ล้างตัวกรอง (${selectedIngredients.size})</span>` : '');
+  box.innerHTML = names.map(n => {
+    const active = selectedIngredients.has(n);
+    return `<div class="jar ${active?'active':''}" onclick="toggleIngredient('${escAttr(n)}')">${escHtml(n)}</div>`;
+  }).join('');
+}
+
+function toggleIngredient(name){
+  if(selectedIngredients.has(name)) selectedIngredients.delete(name);
+  else selectedIngredients.add(name);
+  render();
+}
+function clearFilter(){ selectedIngredients.clear(); render(); }
+
+function onSearchInput(v){ searchQuery = v; renderGrid(); }
+
+function escHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escAttr(s){ return String(s).replace(/'/g, "\\'"); }
+
+function matchScore(recipe){
+  if(selectedIngredients.size === 0) return null;
+  const names = new Set(recipe.ingredients.map(i => norm(i.name)));
+  let hit = 0;
+  selectedIngredients.forEach(n => { if(names.has(n)) hit++; });
+  return hit;
+}
+
+function renderGrid(){
+  const area = document.getElementById('gridArea');
+  let list = recipes.slice();
+
+  if(searchQuery.trim()){
+    const q = searchQuery.trim().toLowerCase();
+    list = list.filter(r => r.title.toLowerCase().includes(q) || (r.description||'').toLowerCase().includes(q));
+  }
+
+  if(selectedIngredients.size > 0){
+    list = list.map(r => ({r, score: matchScore(r)})).filter(x => x.score > 0)
+      .sort((a,b)=> b.score - a.score)
+      .map(x => x.r);
+  } else {
+    list = list.slice().reverse();
+  }
+
+  if(recipes.length === 0){
+    area.innerHTML = `<div class="empty-state"><div class="display">ยังไม่มีสูตรอาหารเลย</div><p>เริ่มจดสูตรแรกของคุณได้เลย แล้วแท็กวัตถุดิบไว้ค้นหาทีหลัง</p></div>`;
+    return;
+  }
+  if(list.length === 0){
+    area.innerHTML = `<div class="empty-state"><div class="display">ไม่พบสูตรอาหารที่ตรงกัน</div><p>ลองเลือกวัตถุดิบอื่น หรือล้างตัวกรองดูนะ</p></div>`;
+    return;
+  }
+
+  area.innerHTML = `<div class="grid">${list.map(r => cardHtml(r)).join('')}</div>`;
+}
+
+function cardHtml(r){
+  const score = matchScore(r);
+  const badge = (score !== null) ? `<div class="badge-match">ตรงกัน ${score}/${selectedIngredients.size}</div>` : '';
+  const shownTags = r.ingredients.slice(0,6);
+  const extra = r.ingredients.length - shownTags.length;
+  const tagsHtml = shownTags.map(ing => {
+    const isHit = selectedIngredients.has(norm(ing.name));
+    return `<span class="${isHit?'hit':''}">${escHtml(ing.name)}</span>`;
+  }).join('') + (extra > 0 ? `<span class="more">+${extra}</span>` : '');
+
+  return `
+  <div class="card">
+    ${badge}
+    <h3>${escHtml(r.title)}</h3>
+    <div class="meta">${r.servings ? `เสิร์ฟได้ ${escHtml(r.servings)} ที่ · ` : ''}${r.ingredients.length} วัตถุดิบ</div>
+    <div class="tags">${tagsHtml}</div>
+    <div class="actions">
+      <button class="ghost" onclick="viewRecipe('${r.id}')">ดูสูตร</button>
+      <button class="ghost" onclick="openForm('${r.id}')">แก้ไข</button>
+      <button class="ghost" onclick="deleteRecipe('${r.id}')">ลบ</button>
+    </div>
+  </div>`;
+}
+
+function render(){
+  renderPantry();
+  renderGrid();
+}
+
+/* ---------- Export to Google Sheets ---------- */
+function csvEscape(val){
+  val = String(val == null ? '' : val);
+  if(/[",\n]/.test(val)){
+    return '"' + val.replace(/"/g, '""') + '"';
+  }
+  return val;
+}
+
+function ingredientsToText(ings, sep){
+  return ings.map(i => [i.name, i.amount, i.unit].filter(Boolean).join(' ')).join(sep);
+}
+function stepsToText(steps, sep, numbered){
+  return steps.map((s, idx) => numbered ? `${idx+1}. ${s}` : s).join(sep);
+}
+
+function buildCSV(){
+  const headers = ['ชื่อสูตรอาหาร', 'คำอธิบาย', 'จำนวนเสิร์ฟ (คน)', 'วัตถุดิบ', 'ขั้นตอนการทำ'];
+  const rows = recipes.map(r => [
+    r.title,
+    r.description || '',
+    r.servings || '',
+    ingredientsToText(r.ingredients, '\n'),
+    stepsToText(r.steps, '\n', true)
+  ]);
+  const lines = [headers, ...rows].map(row => row.map(csvEscape).join(','));
+  return lines.join('\r\n');
+}
+
+function buildTSV(){
+  // Flat, single-line-per-cell version so a plain clipboard paste (no real quoting)
+  // still lands correctly in Google Sheets without breaking rows on embedded newlines.
+  const headers = ['ชื่อสูตรอาหาร', 'คำอธิบาย', 'จำนวนเสิร์ฟ (คน)', 'วัตถุดิบ', 'ขั้นตอนการทำ'];
+  const rows = recipes.map(r => [
+    r.title,
+    r.description || '',
+    r.servings || '',
+    ingredientsToText(r.ingredients, '; '),
+    stepsToText(r.steps, ' / ', true)
+  ]);
+  const clean = v => String(v == null ? '' : v).replace(/\t/g, ' ').replace(/\n/g, ' ');
+  const lines = [headers, ...rows].map(row => row.map(clean).join('\t'));
+  return lines.join('\n');
+}
+
+function openExport(){
+  if(recipes.length === 0){
+    showToast('ยังไม่มีสูตรอาหารให้ส่งออกเลย ลองเพิ่มสูตรก่อนนะ');
+    return;
+  }
+  document.getElementById('exportTextarea').value = buildTSV();
+  document.getElementById('exportOverlay').classList.add('show');
+}
+function closeExport(){ document.getElementById('exportOverlay').classList.remove('show'); }
+
+function downloadRecipesCSV(){
+  try{
+    const csv = buildCSV();
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'mind-recipe-export.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
+    showToast('ดาวน์โหลดไฟล์แล้ว');
+  }catch(e){
+    console.error('downloadRecipesCSV error:', e);
+    showToast('ดาวน์โหลดไม่สำเร็จ ลองใช้วิธีคัดลอก-วางแทน');
+  }
+}
+
+async function copyRecipesTSV(){
+  const text = buildTSV();
+  try{
+    await navigator.clipboard.writeText(text);
+    showToast('คัดลอกแล้ว! ไปวางใน Google Sheets ได้เลย');
+    return;
+  }catch(e){
+    // Fallback for environments that block the async clipboard API
+    try{
+      const ta = document.getElementById('exportTextarea');
+      ta.value = text;
+      ta.select();
+      const ok = document.execCommand('copy');
+      if(ok){ showToast('คัดลอกแล้ว! ไปวางใน Google Sheets ได้เลย'); return; }
+    }catch(e2){}
+    showToast('คัดลอกอัตโนมัติไม่ได้ — เลือกข้อความในกล่องด้านล่างแล้วกด Ctrl+C เองนะ');
+  }
+}
+
+
+function ingRowHtml(ing){
+  ing = ing || {name:'', amount:'', unit:''};
+  return `<div class="ing-row">
+    <input type="text" class="ing-name" placeholder="ชื่อวัตถุดิบ" value="${escAttr(ing.name)}">
+    <input type="text" class="amt ing-amount" placeholder="ปริมาณ" value="${escAttr(ing.amount)}">
+    <input type="text" class="ing-unit" list="unitList" placeholder="หน่วย" value="${escAttr(ing.unit)}">
+    <button type="button" class="rm" onclick="this.parentElement.remove()">✕</button>
+  </div>`;
+}
+function stepRowHtml(step){
+  return `<div class="step-row">
+    <textarea class="step-text" placeholder="อธิบายขั้นตอน...">${escHtml(step||'')}</textarea>
+    <button type="button" class="rm" onclick="this.parentElement.remove()">✕</button>
+  </div>`;
+}
+function addIngRow(ing){ document.getElementById('ingRows').insertAdjacentHTML('beforeend', ingRowHtml(ing)); }
+function addStepRow(step){ document.getElementById('stepRows').insertAdjacentHTML('beforeend', stepRowHtml(step)); }
+
+function openForm(id){
+  editingId = id || null;
+  document.getElementById('formTitle').textContent = id ? 'แก้ไขสูตรอาหาร' : 'เพิ่มสูตรอาหารใหม่';
+  document.getElementById('ingRows').innerHTML = '';
+  document.getElementById('stepRows').innerHTML = '';
+
+  if(id){
+    const r = recipes.find(x => x.id === id);
+    document.getElementById('f-title').value = r.title;
+    document.getElementById('f-desc').value = r.description || '';
+    document.getElementById('f-servings').value = r.servings || '';
+    r.ingredients.forEach(addIngRow);
+    r.steps.forEach(addStepRow);
+  } else {
+    document.getElementById('f-title').value = '';
+    document.getElementById('f-desc').value = '';
+    document.getElementById('f-servings').value = 2;
+    addIngRow(); addIngRow();
+    addStepRow();
+  }
+  document.getElementById('formOverlay').classList.add('show');
+}
+function closeForm(){ document.getElementById('formOverlay').classList.remove('show'); }
+
+async function submitForm(){
+  try{
+    const title = norm(document.getElementById('f-title').value);
+    if(!title){
+      showToast('กรุณาใส่ชื่อสูตรอาหาร');
+      return;
+    }
+    const description = norm(document.getElementById('f-desc').value);
+    const servings = norm(document.getElementById('f-servings').value);
+
+    const ingredients = Array.from(document.querySelectorAll('#ingRows .ing-row')).map(row => ({
+      name: norm(row.querySelector('.ing-name').value),
+      amount: norm(row.querySelector('.ing-amount').value),
+      unit: norm(row.querySelector('.ing-unit').value)
+    })).filter(i => i.name);
+
+    const steps = Array.from(document.querySelectorAll('#stepRows .step-text')).map(t => norm(t.value)).filter(s => s);
+
+    if(ingredients.length === 0){
+      showToast('กรุณาใส่วัตถุดิบอย่างน้อย 1 อย่าง');
+      return;
+    }
+
+    if(editingId){
+      const r = recipes.find(x => x.id === editingId);
+      r.title = title; r.description = description; r.servings = servings;
+      r.ingredients = ingredients; r.steps = steps;
+    } else {
+      recipes.push({ id: uid(), title, description, servings, ingredients, steps, createdAt: Date.now() });
+    }
+
+    // Update the UI right away — don't make the person wait on the storage round-trip.
+    closeForm();
+    render();
+    showToast(editingId ? 'แก้ไขสูตรอาหารแล้ว' : 'เพิ่มสูตรอาหารแล้ว');
+
+    // Persist in the background; saveRecipes() has its own try/catch and will
+    // toast separately if persistence fails, without blocking the UI above.
+    saveRecipes();
+  }catch(err){
+    console.error('submitForm error:', err);
+    showToast('เกิดข้อผิดพลาด: ' + (err && err.message ? err.message : 'ไม่ทราบสาเหตุ'));
+  }
+}
+
+async function deleteRecipe(id){
+  if(!confirm('ต้องการลบสูตรอาหารนี้ใช่ไหม?')) return;
+  recipes = recipes.filter(r => r.id !== id);
+  await saveRecipes();
+  render();
+  showToast('ลบสูตรอาหารแล้ว');
+}
+
+/* ---------- Detail view ---------- */
+function viewRecipe(id){
+  const r = recipes.find(x => x.id === id);
+  if(!r) return;
+  const ingHtml = r.ingredients.map(ing => `<li><span>${escHtml(ing.name)}</span><span class="amt">${escHtml(ing.amount||'')} ${escHtml(ing.unit||'')}</span></li>`).join('');
+  const stepHtml = r.steps.map(s => `<li>${escHtml(s)}</li>`).join('');
+  document.getElementById('detailBody').innerHTML = `
+    <h2>${escHtml(r.title)}</h2>
+    ${r.servings ? `<div class="detail-servings">เสิร์ฟได้ ${escHtml(r.servings)} ที่</div>` : ''}
+    ${r.description ? `<p class="detail-desc">${escHtml(r.description)}</p>` : ''}
+    <div class="detail-section">
+      <h4>วัตถุดิบ</h4>
+      <ul class="ing-list">${ingHtml || '<li>ไม่มีข้อมูลวัตถุดิบ</li>'}</ul>
+    </div>
+    <div class="detail-section">
+      <h4>ขั้นตอนการทำ</h4>
+      <ul class="steps-list">${stepHtml || '<li>ไม่มีขั้นตอน</li>'}</ul>
+    </div>
+  `;
+  document.getElementById('detailOverlay').classList.add('show');
+}
+function closeDetail(){ document.getElementById('detailOverlay').classList.remove('show'); }
+
+document.querySelectorAll('.overlay').forEach(ov => {
+  ov.addEventListener('click', e => { if(e.target === ov) ov.classList.remove('show'); });
+});
+
+window.addEventListener('error', (e) => {
+  console.error('Unhandled error:', e.error || e.message);
+  showToast('เกิดข้อผิดพลาด: ' + (e.message || 'ไม่ทราบสาเหตุ'));
+});
+window.addEventListener('unhandledrejection', (e) => {
+  console.error('Unhandled promise rejection:', e.reason);
+  showToast('เกิดข้อผิดพลาด: ' + (e.reason && e.reason.message ? e.reason.message : 'ไม่ทราบสาเหตุ'));
+});
+
+loadRecipes();
+</script>
+</body>
+</html>
