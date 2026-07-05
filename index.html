@@ -367,7 +367,7 @@ const STORAGE_KEY = 'recipes';
 // ---- Google Sheets backend (optional, cross-device) ----
 // วางลิงก์ Web app URL ที่ได้จากการ Deploy Google Apps Script ของคุณตรงนี้
 // (ดูขั้นตอนใน apps-script-code.gs) ต้องขึ้นต้นด้วย https://script.google.com/macros/s/.../exec
-const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbynBpvtMPyj6jM7rlXYhoYIU1vmeQWLx2FAbOLzbV3n6a3hd3npUeUPuC1MKgg5kqg/exec';
+const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbzWLKNdIGsaxovsgMPHNUAGWZ4PBLHORUMK23laYJN8OZ3vviV2_hmZyw-Xbrhn4IhBEg/exec';
 
 function sheetConfigured(){
   return typeof SHEET_API_URL === 'string' && SHEET_API_URL.indexOf('https://script.google.com/macros/') === 0;
