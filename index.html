@@ -94,6 +94,15 @@
   .jar.active::before{background:var(--butter); border-color:#c9a53f;}
   .jar:hover{border-color:var(--sage);}
   .pantry-empty{color:#8a8071; font-size:13.5px; font-style:italic;}
+  .pantry-section{margin-bottom:16px;}
+  .pantry-section:last-child{margin-bottom:0;}
+  .pantry-section-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px;}
+  .pantry-section-label{font-size:13px; font-weight:700; color:var(--sage-deep);}
+  .pantry-dropdown{
+    font-family:'Sarabun'; font-size:13px; padding:5px 8px; border-radius:8px; border:1.5px solid var(--line);
+    background:#fff; color:#5c5340; max-width:200px;
+  }
+  .pantry-tags{display:flex; flex-wrap:wrap; gap:8px;}
 
   /* ---------- Recipe grid ---------- */
   .grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(270px,1fr)); gap:22px;}
@@ -112,6 +121,12 @@
     position:absolute; top:-11px; right:14px; background:var(--butter); color:var(--ink);
     font-size:11.5px; font-weight:700; padding:3px 10px; border-radius:999px; box-shadow:0 2px 5px rgba(0,0,0,0.15);
   }
+  .card .fav-btn{
+    position:absolute; top:-13px; left:12px; background:#fff; border:1.5px solid var(--line);
+    width:28px; height:28px; border-radius:50%; font-size:15px; cursor:pointer; display:flex;
+    align-items:center; justify-content:center; color:#c9bb8f; box-shadow:0 2px 5px rgba(0,0,0,0.12); padding:0; line-height:1;
+  }
+  .card .fav-btn.active{background:var(--butter); border-color:#c9a53f; color:#8a6b1c;}
   .card h3{font-size:19px; margin:10px 0 4px; color:var(--ink); line-height:1.3;}
   .card .meta{font-size:12.5px; color:#8a8071; margin-bottom:10px;}
   .card .tags{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px;}
@@ -150,10 +165,7 @@
   }
   .field textarea{min-height:60px;}
   .row2{display:grid; grid-template-columns:1fr 140px; gap:12px;}
-  .ing-row, .step-row{display:flex; gap:8px; margin-bottom:8px; align-items:flex-start;}
-  .ing-row input{flex:2;}
-  .ing-row input.amt{flex:1;}
-  .ing-row select{flex:1;}
+  .step-row{display:flex; gap:8px; margin-bottom:8px; align-items:flex-start;}
   .step-row .num{
     width:28px; height:38px; display:flex; align-items:center; justify-content:center;
     font-weight:700; color:var(--sage-deep); flex-shrink:0;
@@ -163,6 +175,24 @@
     background:none; border:none; color:var(--paprika-deep); font-size:19px; cursor:pointer; flex-shrink:0;
     width:32px; height:38px;
   }
+  .ing-block{
+    border:1.5px solid var(--line); border-radius:10px; padding:12px; margin-bottom:10px; background:#fdfaf2;
+  }
+  .ing-block-top{display:flex; gap:8px; margin-bottom:8px;}
+  .ing-block-top select.ing-category{flex:1.3;}
+  .ing-block-top input.ing-amount{flex:1;}
+  .ing-block-top input.ing-unit{flex:1;}
+  .ing-names{display:flex; flex-direction:column; gap:6px;}
+  .ing-name-row{display:flex; gap:8px; align-items:center;}
+  .ing-name-row input.ing-name{flex:1;}
+  .ing-name-row .rm-name{
+    background:none; border:none; color:var(--paprika-deep); font-size:16px; cursor:pointer; flex-shrink:0; width:26px;
+  }
+  .add-or-btn{
+    background:none; border:1.5px dashed var(--sage); color:var(--sage-deep); border-radius:8px;
+    padding:5px 10px; font-size:12.5px; font-weight:600; cursor:pointer; margin-top:8px;
+  }
+  .add-or-btn:hover{background:rgba(92,107,79,0.08);}
   .add-row-btn{
     background:none; border:1.5px dashed var(--line); color:var(--sage-deep); border-radius:8px;
     padding:8px 12px; font-size:13.5px; font-weight:600; cursor:pointer; width:100%; margin-top:2px;
@@ -179,15 +209,21 @@
   .detail-section h4{font-size:14px; color:var(--sage-deep); text-transform:uppercase; letter-spacing:0.8px; margin:0 0 10px;}
   .ing-list{list-style:none; padding:0; margin:0 0 22px;}
   .ing-list li{
-    display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed var(--line); font-size:15px;
+    display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px dashed var(--line); font-size:15px;
   }
-  .ing-list li span.amt{color:#8a8071; font-size:13.5px;}
+  .ing-list li span.amt{color:#8a8071; font-size:13.5px; flex-shrink:0; margin-left:10px;}
+  .chk-label{display:flex; align-items:center; gap:10px; cursor:pointer;}
+  .chk-label input[type=checkbox]{width:17px; height:17px; accent-color:var(--sage); cursor:pointer; flex-shrink:0;}
+  .ing-list li.checked .ing-name-text{text-decoration:line-through; color:#a89e8c;}
   .steps-list{list-style:none; padding:0; margin:0; counter-reset:step;}
   .steps-list li{counter-increment:step; display:flex; gap:12px; margin-bottom:14px; font-size:15px; line-height:1.6;}
   .steps-list li::before{
     content:counter(step); flex-shrink:0; width:26px; height:26px; border-radius:50%;
     background:var(--sage); color:#fff; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center;
   }
+  .step-chk-label{display:flex; align-items:flex-start; gap:10px; cursor:pointer; flex:1;}
+  .step-chk-label input[type=checkbox]{width:17px; height:17px; accent-color:var(--sage); cursor:pointer; flex-shrink:0; margin-top:2px;}
+  .steps-list li.checked .step-text{text-decoration:line-through; color:#a89e8c;}
   .toast{
     position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--ink); color:#FAF5E9;
     padding:10px 20px; border-radius:999px; font-size:13.5px; z-index:100; opacity:0; pointer-events:none; transition:opacity .25s ease;
@@ -331,10 +367,65 @@ const STORAGE_KEY = 'recipes';
 // ---- Google Sheets backend (optional, cross-device) ----
 // วางลิงก์ Web app URL ที่ได้จากการ Deploy Google Apps Script ของคุณตรงนี้
 // (ดูขั้นตอนใน apps-script-code.gs) ต้องขึ้นต้นด้วย https://script.google.com/macros/s/.../exec
-const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbyVYuE4aKzdgNgIF8Lg-kuCEZcClQ39YtPW1qCGYRhMEmDveV8XaD3ajCXQCJrt4exhyw/exec';
+const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbynBpvtMPyj6jM7rlXYhoYIU1vmeQWLx2FAbOLzbV3n6a3hd3npUeUPuC1MKgg5kqg/exec';
 
 function sheetConfigured(){
   return typeof SHEET_API_URL === 'string' && SHEET_API_URL.indexOf('https://script.google.com/macros/') === 0;
+}
+
+// Apps Script Web Apps can't send CORS headers, so a plain fetch() can never read
+// their response. JSONP (loading a <script> tag) is exempt from CORS and is the
+// standard workaround for reading data back from Apps Script.
+function jsonpFetch(url, timeoutMs){
+  return new Promise((resolve, reject) => {
+    const cbName = 'gasCallback_' + Date.now() + '_' + Math.floor(Math.random()*100000);
+    const script = document.createElement('script');
+    let timeoutId;
+    function cleanup(){
+      clearTimeout(timeoutId);
+      delete window[cbName];
+      script.remove();
+    }
+    window[cbName] = (data) => { resolve(data); cleanup(); };
+    script.onerror = () => { reject(new Error('โหลดข้อมูลจาก Google Sheets ไม่สำเร็จ (เช็ก URL หรือการตั้งค่า Deploy)')); cleanup(); };
+    timeoutId = setTimeout(() => { reject(new Error('หมดเวลารอ Google Sheets ตอบกลับ')); cleanup(); }, timeoutMs || 10000);
+    const sep = url.indexOf('?') === -1 ? '?' : '&';
+    script.src = url + sep + 'callback=' + cbName + '&t=' + Date.now();
+    document.body.appendChild(script);
+  });
+}
+
+// A real <form> submission to another origin is never subject to CORS, so this is
+// the standard workaround for writing data to Apps Script. We can't read the
+// response this way, so loadRecipes() re-verifies afterward via jsonpFetch.
+function submitViaHiddenForm(url, value){
+  return new Promise((resolve) => {
+    const frameName = 'gasFrame_' + Date.now() + '_' + Math.floor(Math.random()*100000);
+    const iframe = document.createElement('iframe');
+    iframe.name = frameName;
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+    form.target = frameName;
+    form.style.display = 'none';
+
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'value';
+    input.value = value;
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
+
+    setTimeout(() => {
+      form.remove();
+      iframe.remove();
+      resolve();
+    }, 1200);
+  });
 }
 
 function uid(){ return (crypto.randomUUID ? crypto.randomUUID() : 'id-' + Date.now() + '-' + Math.random().toString(16).slice(2)); }
@@ -360,12 +451,19 @@ function updateSyncBadge(mode){
   el.className = 'sync-badge ' + m.cls;
 }
 
+function migrateRecipes(){
+  recipes.forEach(r => {
+    if(typeof r.favorite !== 'boolean') r.favorite = false;
+    r.ingredients = (r.ingredients || []).map(migrateIngredient);
+  });
+}
+
 async function loadRecipes(){
   if(sheetConfigured()){
     try{
-      const res = await fetch(SHEET_API_URL + '?t=' + Date.now());
-      const data = await res.json();
+      const data = await jsonpFetch(SHEET_API_URL);
       recipes = data.value ? JSON.parse(data.value) : [];
+      migrateRecipes();
       updateSyncBadge('sheets');
       render();
       return;
@@ -388,6 +486,7 @@ async function loadRecipes(){
   }catch(e){
     recipes = [];
   }
+  migrateRecipes();
   updateSyncBadge('claude');
   render();
 }
@@ -395,11 +494,17 @@ async function loadRecipes(){
 async function saveRecipes(){
   if(sheetConfigured()){
     try{
-      await fetch(SHEET_API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids a CORS preflight against Apps Script
-        body: JSON.stringify({ value: JSON.stringify(recipes) })
-      });
+      await submitViaHiddenForm(SHEET_API_URL, JSON.stringify(recipes));
+      // The hidden-form technique can't read a response, so verify by reading back.
+      try{
+        const check = await jsonpFetch(SHEET_API_URL, 8000);
+        const saved = check.value ? JSON.parse(check.value) : [];
+        if(JSON.stringify(saved) !== JSON.stringify(recipes)){
+          showToast('บันทึกไป Google Sheets อาจไม่สำเร็จ ลองตรวจสอบอีกครั้ง');
+        }
+      }catch(verifyErr){
+        console.warn('Could not verify Google Sheets save:', verifyErr);
+      }
       return;
     }catch(e){
       console.error('Google Sheets save error:', e);
@@ -420,31 +525,59 @@ async function saveRecipes(){
   }
 }
 
-function allIngredientNames(){
+function ingredientNamesByCategory(cat){
   const freq = {};
   recipes.forEach(r => r.ingredients.forEach(ing => {
-    const n = norm(ing.name);
-    if(!n) return;
-    freq[n] = (freq[n]||0) + 1;
+    if(ing.category !== cat) return;
+    (ing.names || []).forEach(n => {
+      n = norm(n);
+      if(!n) return;
+      freq[n] = (freq[n]||0) + 1;
+    });
   }));
   return Object.entries(freq).sort((a,b)=> b[1]-a[1]).map(e=>e[0]);
+}
+
+function pantrySectionHtml(label, names){
+  if(names.length === 0) return '';
+  const options = names.map(n => `<option value="${escAttr(n)}">${escHtml(n)}</option>`).join('');
+  const tags = names.map(n => {
+    const active = selectedIngredients.has(n);
+    return `<div class="jar ${active?'active':''}" onclick="toggleIngredient('${escAttr(n)}')">${escHtml(n)}</div>`;
+  }).join('');
+  return `<div class="pantry-section">
+    <div class="pantry-section-head">
+      <span class="pantry-section-label">${label}</span>
+      <select class="pantry-dropdown" onchange="onPantryDropdown(this)">
+        <option value="">— เลือกจากรายการ —</option>
+        ${options}
+      </select>
+    </div>
+    <div class="pantry-tags">${tags}</div>
+  </div>`;
 }
 
 function renderPantry(){
   const box = document.getElementById('pantryBox');
   const label = document.getElementById('pantryLabel');
-  const names = allIngredientNames();
-  if(names.length === 0){
+  const meatNames = ingredientNamesByCategory('meat');
+  const vegNames = ingredientNamesByCategory('veg');
+
+  if(meatNames.length === 0 && vegNames.length === 0){
     box.innerHTML = '';
     label.innerHTML = '<span class="pantry-empty">ยังไม่มีวัตถุดิบให้เลือก เพิ่มสูตรอาหารก่อนนะ</span>';
     return;
   }
-  label.innerHTML = 'แตะวัตถุดิบที่คุณมี เพื่อค้นหาสูตรที่ทำได้' +
+  label.innerHTML = 'แตะหรือเลือกวัตถุดิบที่คุณมี เพื่อค้นหาสูตรที่ทำได้' +
     (selectedIngredients.size ? ` <span class="clear" onclick="clearFilter()">ล้างตัวกรอง (${selectedIngredients.size})</span>` : '');
-  box.innerHTML = names.map(n => {
-    const active = selectedIngredients.has(n);
-    return `<div class="jar ${active?'active':''}" onclick="toggleIngredient('${escAttr(n)}')">${escHtml(n)}</div>`;
-  }).join('');
+  box.innerHTML = pantrySectionHtml('เนื้อสัตว์', meatNames) + pantrySectionHtml('ผัก', vegNames);
+}
+
+function onPantryDropdown(sel){
+  const val = sel.value;
+  if(!val) return;
+  selectedIngredients.add(val);
+  render();
 }
 
 function toggleIngredient(name){
@@ -461,9 +594,18 @@ function escHtml(s){
 }
 function escAttr(s){ return String(s).replace(/'/g, "\\'"); }
 
+function ingredientDisplayName(ing){
+  return (ing.names && ing.names.length) ? ing.names.join(' หรือ ') : '';
+}
+function ingredientFlatNames(recipe){
+  const set = new Set();
+  recipe.ingredients.forEach(ing => (ing.names || []).forEach(n => set.add(norm(n))));
+  return set;
+}
+
 function matchScore(recipe){
   if(selectedIngredients.size === 0) return null;
-  const names = new Set(recipe.ingredients.map(i => norm(i.name)));
+  const names = ingredientFlatNames(recipe);
   let hit = 0;
   selectedIngredients.forEach(n => { if(names.has(n)) hit++; });
   return hit;
@@ -486,6 +628,9 @@ function renderGrid(){
     list = list.slice().reverse();
   }
 
+  // Favorites always float to the top (stable sort keeps prior ordering within each group)
+  list = list.sort((a,b) => (b.favorite?1:0) - (a.favorite?1:0));
+
   if(recipes.length === 0){
     area.innerHTML = `<div class="empty-state"><div class="display">ยังไม่มีสูตรอาหารเลย</div><p>เริ่มจดสูตรแรกของคุณได้เลย แล้วแท็กวัตถุดิบไว้ค้นหาทีหลัง</p></div>`;
     return;
@@ -504,13 +649,14 @@ function cardHtml(r){
   const shownTags = r.ingredients.slice(0,6);
   const extra = r.ingredients.length - shownTags.length;
   const tagsHtml = shownTags.map(ing => {
-    const isHit = selectedIngredients.has(norm(ing.name));
-    return `<span class="${isHit?'hit':''}">${escHtml(ing.name)}</span>`;
+    const isHit = (ing.names || []).some(n => selectedIngredients.has(norm(n)));
+    return `<span class="${isHit?'hit':''}">${escHtml(ingredientDisplayName(ing))}</span>`;
   }).join('') + (extra > 0 ? `<span class="more">+${extra}</span>` : '');
 
   return `
   <div class="card">
     ${badge}
+    <button class="fav-btn ${r.favorite?'active':''}" onclick="toggleFavorite('${r.id}')" title="สูตรโปรด">${r.favorite ? '★' : '☆'}</button>
     <h3>${escHtml(r.title)}</h3>
     <div class="meta">${r.servings ? `เสิร์ฟได้ ${escHtml(r.servings)} ที่ · ` : ''}${r.ingredients.length} วัตถุดิบ</div>
     <div class="tags">${tagsHtml}</div>
@@ -520,6 +666,14 @@ function cardHtml(r){
       <button class="ghost" onclick="deleteRecipe('${r.id}')">ลบ</button>
     </div>
   </div>`;
+}
+
+async function toggleFavorite(id){
+  const r = recipes.find(x => x.id === id);
+  if(!r) return;
+  r.favorite = !r.favorite;
+  render();
+  saveRecipes();
 }
 
 function render(){
@@ -537,7 +691,10 @@ function csvEscape(val){
 }
 
 function ingredientsToText(ings, sep){
-  return ings.map(i => [i.name, i.amount, i.unit].filter(Boolean).join(' ')).join(sep);
+  return ings.map(i => {
+    const label = CATEGORY_LABELS[i.category] ? `[${CATEGORY_LABELS[i.category]}] ` : '';
+    return [label + ingredientDisplayName(i), i.amount, i.unit].filter(Boolean).join(' ');
+  }).join(sep);
 }
 function stepsToText(steps, sep, numbered){
   return steps.map((s, idx) => numbered ? `${idx+1}. ${s}` : s).join(sep);
@@ -621,14 +778,49 @@ async function copyRecipesTSV(){
 }
 
 
-function ingRowHtml(ing){
-  ing = ing || {name:'', amount:'', unit:''};
-  return `<div class="ing-row">
-    <input type="text" class="ing-name" placeholder="ชื่อวัตถุดิบ" value="${escAttr(ing.name)}">
-    <input type="text" class="amt ing-amount" placeholder="ปริมาณ" value="${escAttr(ing.amount)}">
-    <input type="text" class="ing-unit" list="unitList" placeholder="หน่วย" value="${escAttr(ing.unit)}">
-    <button type="button" class="rm" onclick="this.parentElement.remove()">✕</button>
+const CATEGORY_LABELS = { meat: 'เนื้อสัตว์', veg: 'ผัก', season: 'เครื่องปรุง' };
+
+function migrateIngredient(ing){
+  if(ing && Array.isArray(ing.names)) return ing; // already new format
+  // old format had a single `name` string — wrap it and default to 'season' since we can't infer category
+  return { category: ing.category || 'season', names: (ing && ing.name) ? [ing.name] : [''], amount: (ing && ing.amount) || '', unit: (ing && ing.unit) || '' };
+}
+
+function ingNameRowHtml(name, isFirst){
+  return `<div class="ing-name-row">
+    <input type="text" class="ing-name" placeholder="${isFirst ? 'ชื่อวัตถุดิบ' : 'ชื่อวัตถุดิบ (ตัวเลือกอื่น)'}" value="${escAttr(name||'')}">
+    ${isFirst ? '' : '<button type="button" class="rm-name" onclick="this.parentElement.remove()">✕</button>'}
   </div>`;
+}
+
+function ingRowHtml(ing){
+  ing = migrateIngredient(ing || { category:'meat', names:[''], amount:'', unit:'' });
+  const names = ing.names && ing.names.length ? ing.names : [''];
+  const isMeat = ing.category === 'meat';
+  const nameRows = names.map((n, idx) => ingNameRowHtml(n, idx === 0)).join('');
+  return `<div class="ing-block">
+    <div class="ing-block-top">
+      <select class="ing-category" onchange="onCategoryChange(this)">
+        <option value="meat" ${ing.category==='meat'?'selected':''}>เนื้อสัตว์</option>
+        <option value="veg" ${ing.category==='veg'?'selected':''}>ผัก</option>
+        <option value="season" ${ing.category==='season'?'selected':''}>เครื่องปรุง</option>
+      </select>
+      <input type="text" class="amt ing-amount" placeholder="ปริมาณ" value="${escAttr(ing.amount)}">
+      <input type="text" class="ing-unit" list="unitList" placeholder="หน่วย" value="${escAttr(ing.unit)}">
+      <button type="button" class="rm" onclick="this.closest('.ing-block').remove()">✕</button>
+    </div>
+    <div class="ing-names">${nameRows}</div>
+    <button type="button" class="add-or-btn" onclick="addOrName(this)" style="display:${isMeat ? 'inline-block' : 'none'}">+ หรือ (ตัวเลือกอื่นที่ใช้แทนกันได้)</button>
+  </div>`;
+}
+function addOrName(btn){
+  const container = btn.previousElementSibling; // .ing-names
+  container.insertAdjacentHTML('beforeend', ingNameRowHtml('', false));
+}
+function onCategoryChange(sel){
+  const block = sel.closest('.ing-block');
+  const btn = block.querySelector('.add-or-btn');
+  btn.style.display = sel.value === 'meat' ? 'inline-block' : 'none';
 }
 function stepRowHtml(step){
   return `<div class="step-row">
@@ -656,7 +848,8 @@ function openForm(id){
     document.getElementById('f-title').value = '';
     document.getElementById('f-desc').value = '';
     document.getElementById('f-servings').value = 2;
-    addIngRow(); addIngRow();
+    addIngRow({ category:'meat', names:[''], amount:'', unit:'' });
+    addIngRow({ category:'veg', names:[''], amount:'', unit:'' });
     addStepRow();
   }
   document.getElementById('formOverlay').classList.add('show');
@@ -673,11 +866,12 @@ async function submitForm(){
     const description = norm(document.getElementById('f-desc').value);
     const servings = norm(document.getElementById('f-servings').value);
 
-    const ingredients = Array.from(document.querySelectorAll('#ingRows .ing-row')).map(row => ({
-      name: norm(row.querySelector('.ing-name').value),
-      amount: norm(row.querySelector('.ing-amount').value),
-      unit: norm(row.querySelector('.ing-unit').value)
-    })).filter(i => i.name);
+    const ingredients = Array.from(document.querySelectorAll('#ingRows .ing-block')).map(block => ({
+      category: block.querySelector('.ing-category').value,
+      names: Array.from(block.querySelectorAll('.ing-name')).map(inp => norm(inp.value)).filter(Boolean),
+      amount: norm(block.querySelector('.ing-amount').value),
+      unit: norm(block.querySelector('.ing-unit').value)
+    })).filter(i => i.names.length > 0);
 
     const steps = Array.from(document.querySelectorAll('#stepRows .step-text')).map(t => norm(t.value)).filter(s => s);
 
@@ -691,7 +885,7 @@ async function submitForm(){
       r.title = title; r.description = description; r.servings = servings;
       r.ingredients = ingredients; r.steps = steps;
     } else {
-      recipes.push({ id: uid(), title, description, servings, ingredients, steps, createdAt: Date.now() });
+      recipes.push({ id: uid(), title, description, servings, ingredients, steps, favorite: false, createdAt: Date.now() });
     }
 
     // Update the UI right away — don't make the person wait on the storage round-trip.
@@ -720,18 +914,31 @@ async function deleteRecipe(id){
 function viewRecipe(id){
   const r = recipes.find(x => x.id === id);
   if(!r) return;
-  const ingHtml = r.ingredients.map(ing => `<li><span>${escHtml(ing.name)}</span><span class="amt">${escHtml(ing.amount||'')} ${escHtml(ing.unit||'')}</span></li>`).join('');
-  const stepHtml = r.steps.map(s => `<li>${escHtml(s)}</li>`).join('');
+  const ingHtml = r.ingredients.map((ing, idx) => `
+    <li id="ing-li-${idx}">
+      <label class="chk-label">
+        <input type="checkbox" onchange="document.getElementById('ing-li-${idx}').classList.toggle('checked', this.checked)">
+        <span class="ing-name-text">${escHtml(ingredientDisplayName(ing))}</span>
+      </label>
+      <span class="amt">${escHtml(ing.amount||'')} ${escHtml(ing.unit||'')}</span>
+    </li>`).join('');
+  const stepHtml = r.steps.map((s, idx) => `
+    <li id="step-li-${idx}">
+      <label class="step-chk-label">
+        <input type="checkbox" onchange="document.getElementById('step-li-${idx}').classList.toggle('checked', this.checked)">
+        <span class="step-text">${escHtml(s)}</span>
+      </label>
+    </li>`).join('');
   document.getElementById('detailBody').innerHTML = `
     <h2>${escHtml(r.title)}</h2>
     ${r.servings ? `<div class="detail-servings">เสิร์ฟได้ ${escHtml(r.servings)} ที่</div>` : ''}
     ${r.description ? `<p class="detail-desc">${escHtml(r.description)}</p>` : ''}
     <div class="detail-section">
-      <h4>วัตถุดิบ</h4>
+      <h4>วัตถุดิบ <span style="font-weight:400; text-transform:none; letter-spacing:0; color:#a89e8c; font-size:12px;">— ติ๊กเมื่อเตรียมแล้ว</span></h4>
       <ul class="ing-list">${ingHtml || '<li>ไม่มีข้อมูลวัตถุดิบ</li>'}</ul>
     </div>
     <div class="detail-section">
-      <h4>ขั้นตอนการทำ</h4>
+      <h4>ขั้นตอนการทำ <span style="font-weight:400; text-transform:none; letter-spacing:0; color:#a89e8c; font-size:12px;">— ติ๊กเมื่อทำถึงขั้นนี้แล้ว</span></h4>
       <ul class="steps-list">${stepHtml || '<li>ไม่มีขั้นตอน</li>'}</ul>
     </div>
   `;
