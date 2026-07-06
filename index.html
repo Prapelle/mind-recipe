@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -81,13 +82,12 @@
   .pantry-label{font-size:13px; color:#7a705f; margin:0 0 8px; display:flex; align-items:center; gap:8px;}
   .pantry-label .clear{cursor:pointer; color:var(--paprika-deep); font-weight:700;}
   .pantry-empty{color:#8a8071; font-size:13.5px; font-style:italic;}
-  .pantry-section{margin-bottom:14px;}
-  .pantry-section:last-child{margin-bottom:0;}
+  .pantry-dropdown-row{display:flex; gap:12px; flex-wrap:wrap;}
+  .pantry-section{flex:1; min-width:140px;}
   .pantry-section-label{font-size:13px; font-weight:700; color:var(--sage-deep); margin-bottom:6px;}
-  .pantry-dropdown-row{display:flex; gap:8px; flex-wrap:wrap;}
   .pantry-dropdown{
-    font-family:'Sarabun'; font-size:13.5px; padding:8px 10px; border-radius:8px; border:1.5px solid var(--line);
-    background:#fff; color:#5c5340; flex:1; min-width:100px;
+    width:100%; font-family:'Sarabun'; font-size:13.5px; padding:8px 10px; border-radius:8px; border:1.5px solid var(--line);
+    background:#fff; color:#5c5340;
   }
   .selected-chips{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;}
   .chip{
@@ -237,7 +237,7 @@
   <header class="top">
     <div class="top-row">
       <div class="brand">
-        <h1>Mind Recipe<span class="stamp">v.1</span></h1>
+        <h1>Mind Recipe<span class="stamp">v.3</span></h1>
         <p>สมุดจดสูตรอาหารและวัตถุดิบของคุณ — ค้นหาสูตรจากของที่มีอยู่ในครัว</p>
         <div class="sync-badge" id="syncBadge"></div>
       </div>
@@ -360,7 +360,7 @@ const STORAGE_KEY = 'recipes';
 // ---- Google Sheets backend (optional, cross-device) ----
 // วางลิงก์ Web app URL ที่ได้จากการ Deploy Google Apps Script ของคุณตรงนี้
 // (ดูขั้นตอนใน apps-script-code.gs) ต้องขึ้นต้นด้วย https://script.google.com/macros/s/.../exec
-const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbzWLKNdIGsaxovsgMPHNUAGWZ4PBLHORUMK23laYJN8OZ3vviV2_hmZyw-Xbrhn4IhBEg/exec';
+const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbzWLKNdIGsaxovsgMPHNUAGWZ4PBLHORUMK23laYJN8OZ3vviV2_hmZyw-Xbrhn4IhBEg/exec;
 
 function sheetConfigured(){
   return typeof SHEET_API_URL === 'string' && SHEET_API_URL.indexOf('https://script.google.com/macros/') === 0;
@@ -548,18 +548,16 @@ function ingredientNamesByCategory(cat){
   return Object.entries(freq).sort((a,b)=> b[1]-a[1]).map(e=>e[0]);
 }
 
-function pantrySectionHtml(label, names, count){
+function pantrySectionHtml(label, names){
   if(names.length === 0) return '';
   const available = names.filter(n => !selectedIngredients.has(n));
   const optHtml = available.map(n => `<option value="${escAttr(n)}">${escHtml(n)}</option>`).join('');
-  const selects = Array.from({length: count}).map((_, i) => `
-    <select class="pantry-dropdown" onchange="onPantryDropdown(this)">
-      <option value="">— ${label} ${i+1} —</option>
-      ${optHtml}
-    </select>`).join('');
   return `<div class="pantry-section">
     <div class="pantry-section-label">${label}</div>
-    <div class="pantry-dropdown-row">${selects}</div>
+    <select class="pantry-dropdown" onchange="onPantryDropdown(this)">
+      <option value="">— ${label} —</option>
+      ${optHtml}
+    </select>
   </div>`;
 }
 
@@ -574,14 +572,14 @@ function renderPantry(){
     label.innerHTML = '<span class="pantry-empty">ยังไม่มีวัตถุดิบให้เลือก เพิ่มสูตรอาหารก่อนนะ</span>';
     return;
   }
-  label.innerHTML = 'เลือกวัตถุดิบที่คุณมี (เลือกแค่อันเดียวก็ค้นหาได้) เพื่อค้นหาสูตรที่ทำได้' +
+  label.innerHTML = 'เลือกวัตถุดิบที่คุณมี เพื่อค้นหาสูตรที่ทำได้' +
     (selectedIngredients.size ? ` <span class="clear" onclick="clearFilter()">ล้างตัวกรอง (${selectedIngredients.size})</span>` : '');
 
   const chipsHtml = selectedIngredients.size ? `<div class="selected-chips">${
     Array.from(selectedIngredients).map(n => `<span class="chip">${escHtml(n)}<button onclick="toggleIngredient('${escAttr(n)}')">✕</button></span>`).join('')
   }</div>` : '';
 
-  box.innerHTML = chipsHtml + pantrySectionHtml('เนื้อสัตว์', meatNames, 3) + pantrySectionHtml('ผัก', vegNames, 3);
+  box.innerHTML = chipsHtml + `<div class="pantry-dropdown-row">${pantrySectionHtml('เนื้อสัตว์', meatNames)}${pantrySectionHtml('ผัก', vegNames)}</div>`;
 }
 
 function onPantryDropdown(sel){
