@@ -80,29 +80,22 @@
   }
   .pantry-label{font-size:13px; color:#7a705f; margin:0 0 8px; display:flex; align-items:center; gap:8px;}
   .pantry-label .clear{cursor:pointer; color:var(--paprika-deep); font-weight:700;}
-  .pantry{display:flex; flex-wrap:wrap; gap:8px;}
-  .jar{
-    position:relative; padding:6px 14px 6px 26px; border-radius:999px; font-size:13.5px;
-    background:var(--paper-deep); border:1.5px solid var(--line); cursor:pointer; user-select:none;
-    color:#54493a; transition:all .12s ease;
-  }
-  .jar::before{
-    content:''; position:absolute; left:9px; top:50%; transform:translateY(-50%);
-    width:9px; height:9px; border-radius:50%; background:#d8cca3; border:1.5px solid #c9bb8f;
-  }
-  .jar.active{background:var(--sage); border-color:var(--sage-deep); color:#fff;}
-  .jar.active::before{background:var(--butter); border-color:#c9a53f;}
-  .jar:hover{border-color:var(--sage);}
   .pantry-empty{color:#8a8071; font-size:13.5px; font-style:italic;}
-  .pantry-section{margin-bottom:16px;}
+  .pantry-section{margin-bottom:14px;}
   .pantry-section:last-child{margin-bottom:0;}
-  .pantry-section-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px;}
-  .pantry-section-label{font-size:13px; font-weight:700; color:var(--sage-deep);}
+  .pantry-section-label{font-size:13px; font-weight:700; color:var(--sage-deep); margin-bottom:6px;}
+  .pantry-dropdown-row{display:flex; gap:8px; flex-wrap:wrap;}
   .pantry-dropdown{
-    font-family:'Sarabun'; font-size:13px; padding:5px 8px; border-radius:8px; border:1.5px solid var(--line);
-    background:#fff; color:#5c5340; max-width:200px;
+    font-family:'Sarabun'; font-size:13.5px; padding:8px 10px; border-radius:8px; border:1.5px solid var(--line);
+    background:#fff; color:#5c5340; flex:1; min-width:100px;
   }
-  .pantry-tags{display:flex; flex-wrap:wrap; gap:8px;}
+  .selected-chips{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;}
+  .chip{
+    display:inline-flex; align-items:center; gap:6px; background:var(--sage); color:#fff;
+    font-size:12.5px; padding:5px 6px 5px 12px; border-radius:999px; white-space:nowrap;
+  }
+  .chip button{background:none; border:none; color:#fff; opacity:0.85; cursor:pointer; font-size:12px; padding:2px; line-height:1;}
+  .chip button:hover{opacity:1;}
 
   /* ---------- Recipe grid ---------- */
   .grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(270px,1fr)); gap:22px;}
@@ -424,8 +417,25 @@ function submitViaHiddenForm(url, value){
       form.remove();
       iframe.remove();
       resolve();
-    }, 1200);
+    }, 15000);
   });
+}
+
+// Apps Script can take 10+ seconds to "wake up" after being idle (a cold start),
+// and mobile data connections add extra latency on top of that — so we retry
+// with longer timeouts instead of giving up after a single short attempt.
+async function jsonpFetchWithRetry(url){
+  const attempts = [8000, 15000, 25000];
+  let lastErr;
+  for(let i = 0; i < attempts.length; i++){
+    try{
+      return await jsonpFetch(url, attempts[i]);
+    }catch(e){
+      lastErr = e;
+      console.warn(`Google Sheets load attempt ${i+1} failed (timeout ${attempts[i]}ms):`, e.message);
+    }
+  }
+  throw lastErr;
 }
 
 function uid(){ return (crypto.randomUUID ? crypto.randomUUID() : 'id-' + Date.now() + '-' + Math.random().toString(16).slice(2)); }
@@ -461,7 +471,7 @@ function migrateRecipes(){
 async function loadRecipes(){
   if(sheetConfigured()){
     try{
-      const data = await jsonpFetch(SHEET_API_URL);
+      const data = await jsonpFetchWithRetry(SHEET_API_URL);
       recipes = data.value ? JSON.parse(data.value) : [];
       migrateRecipes();
       updateSyncBadge('sheets');
@@ -497,7 +507,7 @@ async function saveRecipes(){
       await submitViaHiddenForm(SHEET_API_URL, JSON.stringify(recipes));
       // The hidden-form technique can't read a response, so verify by reading back.
       try{
-        const check = await jsonpFetch(SHEET_API_URL, 8000);
+        const check = await jsonpFetchWithRetry(SHEET_API_URL);
         const saved = check.value ? JSON.parse(check.value) : [];
         if(JSON.stringify(saved) !== JSON.stringify(recipes)){
           showToast('บันทึกไป Google Sheets อาจไม่สำเร็จ ลองตรวจสอบอีกครั้ง');
@@ -528,7 +538,7 @@ async function saveRecipes(){
 function ingredientNamesByCategory(cat){
   const freq = {};
   recipes.forEach(r => r.ingredients.forEach(ing => {
-    if(ing.category !== cat) return;
+    if(ing.category !== cat && ing.category !== 'unspecified') return;
     (ing.names || []).forEach(n => {
       n = norm(n);
       if(!n) return;
@@ -538,22 +548,18 @@ function ingredientNamesByCategory(cat){
   return Object.entries(freq).sort((a,b)=> b[1]-a[1]).map(e=>e[0]);
 }
 
-function pantrySectionHtml(label, names){
+function pantrySectionHtml(label, names, count){
   if(names.length === 0) return '';
-  const options = names.map(n => `<option value="${escAttr(n)}">${escHtml(n)}</option>`).join('');
-  const tags = names.map(n => {
-    const active = selectedIngredients.has(n);
-    return `<div class="jar ${active?'active':''}" onclick="toggleIngredient('${escAttr(n)}')">${escHtml(n)}</div>`;
-  }).join('');
+  const available = names.filter(n => !selectedIngredients.has(n));
+  const optHtml = available.map(n => `<option value="${escAttr(n)}">${escHtml(n)}</option>`).join('');
+  const selects = Array.from({length: count}).map((_, i) => `
+    <select class="pantry-dropdown" onchange="onPantryDropdown(this)">
+      <option value="">— ${label} ${i+1} —</option>
+      ${optHtml}
+    </select>`).join('');
   return `<div class="pantry-section">
-    <div class="pantry-section-head">
-      <span class="pantry-section-label">${label}</span>
-      <select class="pantry-dropdown" onchange="onPantryDropdown(this)">
-        <option value="">— เลือกจากรายการ —</option>
-        ${options}
-      </select>
-    </div>
-    <div class="pantry-tags">${tags}</div>
+    <div class="pantry-section-label">${label}</div>
+    <div class="pantry-dropdown-row">${selects}</div>
   </div>`;
 }
 
@@ -568,9 +574,14 @@ function renderPantry(){
     label.innerHTML = '<span class="pantry-empty">ยังไม่มีวัตถุดิบให้เลือก เพิ่มสูตรอาหารก่อนนะ</span>';
     return;
   }
-  label.innerHTML = 'แตะหรือเลือกวัตถุดิบที่คุณมี เพื่อค้นหาสูตรที่ทำได้' +
+  label.innerHTML = 'เลือกวัตถุดิบที่คุณมี (เลือกแค่อันเดียวก็ค้นหาได้) เพื่อค้นหาสูตรที่ทำได้' +
     (selectedIngredients.size ? ` <span class="clear" onclick="clearFilter()">ล้างตัวกรอง (${selectedIngredients.size})</span>` : '');
-  box.innerHTML = pantrySectionHtml('เนื้อสัตว์', meatNames) + pantrySectionHtml('ผัก', vegNames);
+
+  const chipsHtml = selectedIngredients.size ? `<div class="selected-chips">${
+    Array.from(selectedIngredients).map(n => `<span class="chip">${escHtml(n)}<button onclick="toggleIngredient('${escAttr(n)}')">✕</button></span>`).join('')
+  }</div>` : '';
+
+  box.innerHTML = chipsHtml + pantrySectionHtml('เนื้อสัตว์', meatNames, 3) + pantrySectionHtml('ผัก', vegNames, 3);
 }
 
 function onPantryDropdown(sel){
@@ -782,8 +793,10 @@ const CATEGORY_LABELS = { meat: 'เนื้อสัตว์', veg: 'ผั�
 
 function migrateIngredient(ing){
   if(ing && Array.isArray(ing.names)) return ing; // already new format
-  // old format had a single `name` string — wrap it and default to 'season' since we can't infer category
-  return { category: ing.category || 'season', names: (ing && ing.name) ? [ing.name] : [''], amount: (ing && ing.amount) || '', unit: (ing && ing.unit) || '' };
+  // Old format had a single `name` string and no category. We can't know if it was
+  // meat or veg, so mark it 'unspecified' rather than guessing 'season' — guessing
+  // wrong would silently hide it from search, which is worse than showing it in both.
+  return { category: ing.category || 'unspecified', names: (ing && ing.name) ? [ing.name] : [''], amount: (ing && ing.amount) || '', unit: (ing && ing.unit) || '' };
 }
 
 function ingNameRowHtml(name, isFirst){
