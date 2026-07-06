@@ -360,7 +360,7 @@ const STORAGE_KEY = 'recipes';
 // ---- Google Sheets backend (optional, cross-device) ----
 // วางลิงก์ Web app URL ที่ได้จากการ Deploy Google Apps Script ของคุณตรงนี้
 // (ดูขั้นตอนใน apps-script-code.gs) ต้องขึ้นต้นด้วย https://script.google.com/macros/s/.../exec
-const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbzWLKNdIGsaxovsgMPHNUAGWZ4PBLHORUMK23laYJN8OZ3vviV2_hmZyw-Xbrhn4IhBEg/exec;
+const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbzWLKNdIGsaxovsgMPHNUAGWZ4PBLHORUMK23laYJN8OZ3vviV2_hmZyw-Xbrhn4IhBEg/exec';
 
 function sheetConfigured(){
   return typeof SHEET_API_URL === 'string' && SHEET_API_URL.indexOf('https://script.google.com/macros/') === 0;
@@ -502,6 +502,7 @@ async function loadRecipes(){
 }
 
 async function saveRecipes(){
+  let sheetsConfirmed = false;
   if(sheetConfigured()){
     try{
       await submitViaHiddenForm(SHEET_API_URL, JSON.stringify(recipes));
@@ -509,28 +510,41 @@ async function saveRecipes(){
       try{
         const check = await jsonpFetchWithRetry(SHEET_API_URL);
         const saved = check.value ? JSON.parse(check.value) : [];
-        if(JSON.stringify(saved) !== JSON.stringify(recipes)){
-          showToast('บันทึกไป Google Sheets อาจไม่สำเร็จ ลองตรวจสอบอีกครั้ง');
+        if(JSON.stringify(saved) === JSON.stringify(recipes)){
+          sheetsConfirmed = true;
+          updateSyncBadge('sheets');
+        } else {
+          console.warn('Google Sheets save could not be verified — falling back to Claude storage.');
         }
       }catch(verifyErr){
         console.warn('Could not verify Google Sheets save:', verifyErr);
       }
-      return;
     }catch(e){
       console.error('Google Sheets save error:', e);
-      showToast('บันทึกไป Google Sheets ไม่สำเร็จ: ' + (e && e.message ? e.message : 'ไม่ทราบสาเหตุ'));
-      return;
     }
   }
+
+  if(sheetsConfirmed) return; // Sheets save confirmed — no need for a fallback
+
+  // Sheets wasn't configured, or the save above couldn't be confirmed — fall back
+  // to Claude's own storage (when available) so data is never lost silently.
   if(!window.storage || typeof window.storage.set !== 'function'){
-    console.warn('No persistent storage configured; recipe kept in memory only for this session.');
+    if(sheetConfigured()){
+      showToast('บันทึกไป Google Sheets ไม่สำเร็จ และไม่มีที่เก็บสำรอง — ข้อมูลอยู่ในหน้านี้เท่านั้น ตรวจสอบการตั้งค่า Apps Script (Who has access ต้องเป็น Anyone)');
+    } else {
+      console.warn('No persistent storage configured; recipe kept in memory only for this session.');
+    }
     return;
   }
   try{
     const res = await window.storage.set(STORAGE_KEY, JSON.stringify(recipes), false);
     if(!res) console.warn('storage.set returned empty result', res);
+    if(sheetConfigured()){
+      updateSyncBadge('claude');
+      showToast('บันทึกไป Google Sheets ไม่สำเร็จ — บันทึกสำรองไว้ในระบบของ Claude แทน (ตรวจสอบการตั้งค่า Apps Script)');
+    }
   }catch(e){
-    console.error('saveRecipes error:', e);
+    console.error('saveRecipes fallback error:', e);
     showToast('บันทึกลงระบบถาวรไม่สำเร็จ (ข้อมูลยังอยู่ในหน้านี้): ' + (e && e.message ? e.message : 'ไม่ทราบสาเหตุ'));
   }
 }
